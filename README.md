@@ -1,69 +1,40 @@
-# React + TypeScript + Vite
+# Library Borrowing System
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+A React + Redux Toolkit Query (RTK Query) frontend for managing a library's book borrowing system, integrated with a RESTful backend API. Users can view books, borrow them, and see a summary of borrowed books.
 
-Currently, two official plugins are available:
+---
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Babel](https://babeljs.io/) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
+## Features
 
-## Expanding the ESLint configuration
+- Browse available books with details (title, ISBN, available copies)
+- Borrow books by specifying quantity and due date
+- Prevent borrowing more copies than available
+- Display borrowed books summary with total quantity per book
+- Responsive and modern UI using Tailwind CSS
+- Real-time feedback with toast notifications for successful or failed borrow operations
 
-If you are developing a production application, we recommend updating the configuration to enable type-aware lint rules:
+---
 
-```js
-export default tseslint.config([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
+## Tech Stack
 
-      // Remove tseslint.configs.recommended and replace with this
-      ...tseslint.configs.recommendedTypeChecked,
-      // Alternatively, use this for stricter rules
-      ...tseslint.configs.strictTypeChecked,
-      // Optionally, add this for stylistic rules
-      ...tseslint.configs.stylisticTypeChecked,
+- **Frontend:** React, TypeScript, Tailwind CSS, Framer Motion
+- **State Management:** Redux Toolkit + RTK Query
+- **Backend:** RESTful API (MongoDB aggregation for borrow summary)
+- **Notifications:** Browser alert or toast messages
+- **Routing:** React Router
 
-      // Other configs...
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
-```
+---
 
-You can also install [eslint-plugin-react-x](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-x) and [eslint-plugin-react-dom](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-dom) for React-specific lint rules:
+## API Endpoints
 
-```js
-// eslint.config.js
-import reactX from 'eslint-plugin-react-x'
-import reactDom from 'eslint-plugin-react-dom'
+### Borrow a Book
 
-export default tseslint.config([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
-      // Enable lint rules for React
-      reactX.configs['recommended-typescript'],
-      // Enable lint rules for React DOM
-      reactDom.configs.recommended,
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
+**Request Body:**
+
+```json
+{
+  "bookId": "64ab3f9e2a4b5c6d7e8f9012",
+  "quantity": 2,
+  "dueDate": "2025-07-18T00:00:00.000Z"
+}
 ```

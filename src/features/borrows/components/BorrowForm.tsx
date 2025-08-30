@@ -13,8 +13,6 @@ export default function BorrowForm({
     const [dueDate, setDueDate] = useState("");
     const [err, setErr] = useState<string>();
 
-    const today = new Date().toISOString().split("T")[0]; // YYYY-MM-DD
-
     const submit = (e: React.FormEvent) => {
         e.preventDefault();
         if (quantity < 1 || quantity > maxQty) {
@@ -25,10 +23,6 @@ export default function BorrowForm({
             setErr("Please select a due date");
             return;
         }
-        if (dueDate < today) {
-            setErr("Due date cannot be in the past");
-            return;
-        }
         setErr(undefined);
         onSubmit({ quantity, dueDate });
     };
@@ -36,13 +30,10 @@ export default function BorrowForm({
     return (
         <form
             onSubmit={submit}
-            className="bg-white/80 backdrop-blur-lg p-6 rounded-2xl shadow-lg max-w-md space-y-5 border border-gray-200"
+            className="bg-white p-4 rounded shadow max-w-md space-y-3"
         >
-            {/* Quantity */}
             <div>
-                <label className="block text-sm font-medium text-gray-700">
-                    Quantity
-                </label>
+                <label className="block text-sm">Quantity</label>
                 <input
                     type="number"
                     min={1}
@@ -51,42 +42,32 @@ export default function BorrowForm({
                     onChange={(e) =>
                         setQuantity(parseInt(e.target.value) || 1)
                     }
-                    className="mt-2 w-full border border-gray-300 rounded-lg px-4 py-2 focus:ring-2 focus:ring-indigo-500 focus:outline-none transition"
+                    className="mt-1 w-full border rounded px-3 py-2"
                 />
-                <p className="text-xs text-gray-500 mt-1">
+                <p className="text-sm text-gray-500">
                     Available copies: {maxQty}
                 </p>
             </div>
 
-            {/* Due Date */}
             <div>
-                <label className="block text-sm font-medium text-gray-700">
-                    Due Date
-                </label>
+                <label className="block text-sm">Due Date</label>
                 <input
                     type="date"
-                    min={today}
                     value={dueDate}
                     onChange={(e) => setDueDate(e.target.value)}
-                    className="mt-2 w-full border border-gray-300 rounded-lg px-4 py-2 focus:ring-2 focus:ring-indigo-500 focus:outline-none transition"
+                    className="mt-1 w-full border rounded px-3 py-2"
                 />
             </div>
 
-            {/* Error Message */}
-            {err && (
-                <p className="text-red-600 text-sm font-medium bg-red-50 px-3 py-2 rounded-lg">
-                    ⚠️ {err}
-                </p>
-            )}
+            {err && <p className="text-red-600">{err}</p>}
 
-            {/* Submit Button */}
             <div>
                 <button
                     type="submit"
-                    className="w-full px-5 py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white font-medium rounded-lg shadow transition disabled:opacity-60"
+                    className="px-4 py-2 bg-gray-800 text-white rounded"
                     disabled={saving}
                 >
-                    {saving ? "Saving..." : "Borrow Now 📚"}
+                    {saving ? "Saving..." : "Borrow"}
                 </button>
             </div>
         </form>

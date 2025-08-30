@@ -1,76 +1,120 @@
-import { useParams } from "react-router-dom";
+import { useState, useEffect } from "react";
+import { useParams, useNavigate } from "react-router-dom";
 import { useGetBookQuery } from "@/features/books/api";
 import { useBorrowBookMutation } from "@/features/borrows/api";
-import BorrowForm from "../components/BorrowForm";
-import { motion } from "framer-motion";
-import { CalendarDays } from "lucide-react";
+import toast from "react-hot-toast";
+
+interface Book {
+    _id: string;
+    title: string;
+    isbn: string;
+    available: number;
+}
 
 export default function BorrowBook() {
-    const { bookId } = useParams();
-    const { data: book, isLoading } = useGetBookQuery(bookId!);
-    const [borrowBook] = useBorrowBookMutation();
+    const { bookId } = useParams<{ bookId: string }>();
+    const navigate = useNavigate();
 
-    if (isLoading) {
-        return (
-            <div className="flex justify-center items-center h-[70vh] text-lg text-gray-500 animate-pulse">
-                Loading book details...
-            </div>
-        );
+    // Add validation for bookId
+    useEffect(() => {
+        if (!bookId) {
+            toast.error("No book ID provided");
+            navigate("/books");
+        }
+    }, [bookId, navigate]);
+
+    const { data: book, isLoading, isError } = useGetBookQuery(bookId, {
+        skip: !bookId
+    });
+
+    const [borrowBook, { isLoading: isBorrowing }] = useBorrowBookMutation();
+    const [quantity, setQuantity] = useState(1);
+    const [dueDate, setDueDate] = useState("");
+
+    // Set minimum date to today and maximum date to 30 days from now
+    const today = new Date().toISOString().split('T')[0];
+    const maxDate = new Date();
+    maxDate.setDate(maxDate.getDate() + 30);
+    const maxDateString = maxDate.toISOString().split('T')[0];
+
+    if (isLoading) return <p className="text-center text-gray-500">Loading book...</p>;
+
+    if (isError || !book?.data) {
+        return <p className="text-center text-red-500">Book not found or failed to load.</p>;
     }
 
-    if (!book) {
-        return (
-            <div className="flex justify-center items-center h-[70vh] text-red-500 font-semibold">
-                ❌ Book not found
-            </div>
-        );
-    }
+    const bookData = book.data;
+
+    const handleSubmit = async (e: React.FormEvent) => {
+        e.preventDefault();
+
+        if (!dueDate) {
+            toast.error("Please select a due date");
+            return;
+        }
+
+        try {
+            const result = await borrowBook({
+                book: bookId,
+                quantity,
+                dueDate: new Date(dueDate).toISOString(),
+            }).unwrap();
+
+            if (result.success) {
+                toast.success("Book borrowed successfully!");
+                navigate("/borrow-summary");
+            } else {
+                toast.error(result.message || "Failed to borrow book");
+            }
+        } catch (error: any) {
+            console.error("Error borrowing:", error);
+            toast.error(error?.data?.message || "Failed to borrow book");
+        }
+    };
 
     return (
-        <div className="min-h-screen bg-gradient-to-br from-indigo-100 via-white to-indigo-50 p-6 flex items-center justify-center">
-            <motion.div
-                initial={{ opacity: 0, y: 40 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.6 }}
-                className="w-full max-w-4xl bg-white/80 backdrop-blur-xl shadow-2xl rounded-2xl p-8"
-            >
-                {/* Book Details */}
-                <div className="flex flex-col md:flex-row gap-8">
-                    {/* Book Cover */}
-                    {book.coverImage ? (
-                        <motion.img
-                            src={book.coverImage}
-                            alt={book.title}
-                            className="w-full md:w-1/3 h-72 object-cover rounded-xl shadow-md"
-                            whileHover={{ scale: 1.05 }}
-                        />
-                    ) : (
-                        <div className="w-full md:w-1/3 h-72 flex items-center justify-center rounded-xl shadow-md bg-gradient-to-br from-indigo-200 to-indigo-400 text-white text-6xl">
-                            📖
-                        </div>
-                    )}
+        <div className="max-w-lg mx-auto p-6 bg-white shadow-lg rounded-2xl mt-8">
+            <h2 className="text-2xl font-bold text-gray-800 mb-4">
+                Borrow: <span className="text-indigo-600">{bookData.title}</span>
+            </h2>
+            <p className="text-gray-600 mb-6">ISBN: {bookData.isbn}</p>
 
-                    {/* Book Info */}
-                    <div className="flex-1">
-                        <h1 className="text-3xl font-bold text-gray-900">{book.title}</h1>
-                        <p className="text-gray-600 text-sm mt-1 italic">by {book.author}</p>
-                        <p className="mt-4 text-gray-700 leading-relaxed">{book.description || "No description available."}</p>
-                        <p className="mt-2 text-sm text-gray-500">ISBN: {book.isbn}</p>
-                    </div>
+            <form onSubmit={handleSubmit} className="space-y-4">
+                <div>
+                    <label className="block text-sm font-medium text-gray-700">Quantity</label>
+                    <input
+                        type="number"
+                        min={1}
+                        max={bookData.available}
+                        value={quantity}
+                        onChange={(e) => setQuantity(Math.min(Number(e.target.value), bookData.available))}
+                        className="w-full border border-gray-300 rounded-lg px-3 py-2 mt-1 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                        required
+                    />
+                    <p className="text-xs text-gray-500 mt-1">Available: {bookData.available}</p>
                 </div>
 
-                {/* Borrow Form */}
-                <div className="mt-10">
-                    <h2 className="text-2xl font-semibold text-gray-800 flex items-center gap-2 mb-4">
-                        <CalendarDays className="w-6 h-6 text-indigo-600" />
-                        Borrow this Book
-                    </h2>
-                    <BorrowForm
-                        onSubmit={(values) => borrowBook(values)}
-                        minDate={new Date().toISOString().split("T")[0]} // 🔥 prevent past dates
+                <div>
+                    <label className="block text-sm font-medium text-gray-700">Due Date</label>
+                    <input
+                        type="date"
+                        value={dueDate}
+                        min={today}
+                        max={maxDateString}
+                        onChange={(e) => setDueDate(e.target.value)}
+                        className="w-full border border-gray-300 rounded-lg px-3 py-2 mt-1 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                        required
                     />
                 </div>
-            </motion.div>
+
+                <button
+                    type="submit"
+                    disabled={isBorrowing || quantity < 1 || !dueDate}
+                    className="w-full bg-indigo-600 text-white py-2 rounded-lg font-medium hover:bg-indigo-700 disabled:bg-gray-400"
+                >
+                    {isBorrowing ? "Borrowing..." : "Borrow Book"}
+                </button>
+            </form>
         </div>
     );
 }

@@ -7,9 +7,9 @@ const linkCls = (isActive: boolean) =>
 export default function Navbar() {
     return (
         <nav className="border-b bg-white">
-            <div className="container mx-auto px-4 h-14 flex items-center justify-between">
+            <div className="container mx-auto px-4 h-14 flex items-center justify-between gap-3">
                 <div className="font-semibold text-lg">📚 Minimal Library</div>
-                <div className="flex gap-2">
+                <div className="flex gap-3">
                     <NavLink to="/books" className={({ isActive }) => linkCls(isActive)}>All Books</NavLink>
                     <NavLink to="/create-book" className={({ isActive }) => linkCls(isActive)}>Add Book</NavLink>
                     <NavLink to="/borrow-summary" className={({ isActive }) => linkCls(isActive)}>Borrow Summary</NavLink>

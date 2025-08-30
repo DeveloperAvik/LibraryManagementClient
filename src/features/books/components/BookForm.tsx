@@ -3,7 +3,8 @@ import { motion } from "framer-motion";
 
 interface BookFormProps {
     onSubmit: (values: any) => void;
-    submitLabel: string;
+    submitLabel: React.ReactNode;
+    defaultValues?: any;
 }
 
 export default function BookForm({ onSubmit, submitLabel }: BookFormProps) {
@@ -17,13 +18,20 @@ export default function BookForm({ onSubmit, submitLabel }: BookFormProps) {
         available: true,
     });
 
-    const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
-        const { name, value, type, checked } = e.target;
+    const handleChange = (
+        e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>
+    ) => {
+        const target = e.target;
+        const { name, value, type } = target;
+
+        const checked = (target as HTMLInputElement).checked;
+
         setFormData((prev) => ({
             ...prev,
             [name]: type === "checkbox" ? checked : value,
         }));
     };
+
 
     const handleSubmit = (e: React.FormEvent) => {
         e.preventDefault();

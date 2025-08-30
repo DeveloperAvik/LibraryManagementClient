@@ -1,4 +1,3 @@
-import React from 'react'
 import { Routes, Route, Navigate } from 'react-router-dom'
 import BookList from '../features/books/pages/BookList'
 import CreateBook from '../features/books/pages/CreateBook'

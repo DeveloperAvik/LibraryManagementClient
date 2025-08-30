@@ -1,4 +1,3 @@
-import React from "react";
 import { useGetBorrowSummaryQuery } from "../api";
 import toast from "react-hot-toast";
 

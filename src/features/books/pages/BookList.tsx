@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import  { useState } from "react";
 import { useGetBooksQuery } from "../api";
 import BookTable from "../components/BookTable";
 import type { Genre } from "../types";

@@ -1,4 +1,3 @@
-import React from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { useGetBookQuery, useUpdateBookMutation } from "../api";
 import BookForm from "../components/BookForm";
@@ -8,7 +7,10 @@ import { Loader2, ArrowLeft, BookOpen } from "lucide-react";
 export default function EditBook() {
     const { id } = useParams<{ id: string }>();
     const navigate = useNavigate();
-    const { data, isLoading, isError, error } = useGetBookQuery(id!);
+
+    if (!id) return <div>Invalid Book ID</div>;
+
+    const { data, isLoading, isError, error } = useGetBookQuery(id);
     const [updateBook, { isLoading: saving }] = useUpdateBookMutation();
 
     if (isLoading)
@@ -27,8 +29,8 @@ export default function EditBook() {
             </div>
         );
 
-    const b = data?.data;
-    if (!b)
+    const bookData = data?.data;
+    if (!bookData)
         return (
             <div className="flex justify-center items-center h-[70vh]">
                 <p className="text-gray-500">Book not found.</p>
@@ -37,7 +39,7 @@ export default function EditBook() {
 
     const onSubmit = async (values: any) => {
         try {
-            await updateBook({ id: id!, data: values }).unwrap();
+            await updateBook({ id, data: values }).unwrap();
             navigate(`/books/${id}`);
         } catch (e) {
             console.error(e);
@@ -79,22 +81,15 @@ export default function EditBook() {
                     className="bg-white shadow-xl rounded-2xl p-8 border border-gray-200"
                 >
                     <p className="text-gray-600 mb-6">
-                        Update details for <span className="font-semibold">{b.title}</span>
+                        Update details for <span className="font-semibold">{bookData.title}</span>
                     </p>
 
                     <BookForm
-                        defaultValues={b as any}
+                        defaultValues={bookData}
                         onSubmit={onSubmit}
-                        submitLabel={
-                            saving ? (
-                                <span className="flex items-center gap-2">
-                                    <Loader2 className="animate-spin h-5 w-5" /> Saving...
-                                </span>
-                            ) : (
-                                "Save Changes"
-                            )
-                        }
+                        submitLabel={saving ? "Saving..." : "Save Changes"}
                     />
+
                 </motion.div>
             </motion.div>
         </div>
